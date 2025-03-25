@@ -1,1 +1,0 @@
-INSERT INTO crypto (owner, symbol, quantity) VALUES ('khoa', 'USDT', 50000);

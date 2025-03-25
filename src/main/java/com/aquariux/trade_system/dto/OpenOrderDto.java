@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LatestPriceDto {
-    private String side;
+public class OpenOrderDto {
     private String pair;
 }
