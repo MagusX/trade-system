@@ -28,6 +28,5 @@ public class PairPriceEntity {
     private BigDecimal askPrice;
     @Column(name = "ask_quantity", precision = 20, scale = 8, nullable = false)
     private BigDecimal askQuantity;
-    private String source;
     private LocalDateTime timestamp;
 }

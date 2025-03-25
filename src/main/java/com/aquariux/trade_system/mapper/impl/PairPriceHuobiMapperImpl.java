@@ -37,7 +37,7 @@ public class PairPriceHuobiMapperImpl implements PairPriceMapper {
 
             LocalDateTime timestamp = LocalDateTime.now(ZoneOffset.UTC);
 
-            results.add(new PairPriceEntity(null, pair, bidPrice, bidQuantity, askPrice, askQuantity, TradeUtils.TICKER_SOURCE_HUOBI, timestamp));
+            results.add(new PairPriceEntity(null, pair, bidPrice, bidQuantity, askPrice, askQuantity, timestamp));
         }
 
         return results;

@@ -36,7 +36,7 @@ public class PairPriceBinanceMapperImpl implements PairPriceMapper {
 
             LocalDateTime timestamp = LocalDateTime.now(ZoneOffset.UTC);
 
-            results.add(new PairPriceEntity(null, pair, bidPrice, bidQuantity, askPrice, askQuantity, TradeUtils.TICKER_SOURCE_BINANCE, timestamp));
+            results.add(new PairPriceEntity(null, pair, bidPrice, bidQuantity, askPrice, askQuantity, timestamp));
         }
 
         return results;
