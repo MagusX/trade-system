@@ -1,29 +1,44 @@
-package com.aquariux.trade_system.mapper;
+package com.aquariux.trade_system.mapper.impl;
 
 import com.aquariux.trade_system.entity.PairPriceEntity;
+import com.aquariux.trade_system.mapper.PairPriceMapper;
 import com.aquariux.trade_system.util.TradeUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
+@Component(value = TradeUtils.TICKER_SOURCE_BINANCE)
 public class PairPriceBinanceMapperImpl implements PairPriceMapper {
-    public PairPriceEntity fromResponse(String jsonResponse) throws Exception {
-        JsonNode rootNode = objectMapper.readTree(jsonResponse);
-        JsonNode dataNode = rootNode.get(0);
-        if (dataNode.isMissingNode()) {
-            throw new IllegalArgumentException("Invalid Binance response format");
+    public List<PairPriceEntity> fromResponse(String jsonResponse) {
+        List<PairPriceEntity> results = new ArrayList<>();
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(jsonResponse);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to map PairPrice from response", e);
+            return null;
         }
 
-        String pair = dataNode.get("symbol").asText().toUpperCase();
-        BigDecimal bidPrice = new BigDecimal(dataNode.get("bidPrice").asText());
-        BigDecimal bidQuantity = new BigDecimal(dataNode.get("bidQty").asText());
-        BigDecimal askPrice = new BigDecimal(dataNode.get("askPrice").asText());
-        BigDecimal askQuantity = new BigDecimal(dataNode.get("askQty").asText());
+        for (JsonNode dataNode : rootNode) {
+            String pair = dataNode.get("symbol").asText().toUpperCase();
+            if (!supportedPairs.contains(pair)) continue;
 
-        LocalDateTime timestamp = LocalDateTime.now(ZoneOffset.UTC);
+            BigDecimal bidPrice = new BigDecimal(dataNode.get("bidPrice").asText());
+            BigDecimal bidQuantity = new BigDecimal(dataNode.get("bidQty").asText());
+            BigDecimal askPrice = new BigDecimal(dataNode.get("askPrice").asText());
+            BigDecimal askQuantity = new BigDecimal(dataNode.get("askQty").asText());
 
-        return new PairPriceEntity(null, pair, bidPrice, bidQuantity, askPrice, askQuantity, TradeUtils.TICKER_SOURCE_BINANCE, timestamp);
+            LocalDateTime timestamp = LocalDateTime.now(ZoneOffset.UTC);
+
+            results.add(new PairPriceEntity(null, pair, bidPrice, bidQuantity, askPrice, askQuantity, TradeUtils.TICKER_SOURCE_BINANCE, timestamp));
+        }
+
+        return results;
     }
 }
