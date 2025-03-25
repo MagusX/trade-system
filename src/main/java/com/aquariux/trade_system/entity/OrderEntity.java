@@ -1,7 +1,9 @@
 package com.aquariux.trade_system.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -10,8 +12,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "order", indexes = {
+@Table(name = "trade_order", indexes = {
         @Index(name = "idx_owner_createdAt", columnList = "owner, created_at")
 })
 @EntityListeners(AuditingEntityListener.class)

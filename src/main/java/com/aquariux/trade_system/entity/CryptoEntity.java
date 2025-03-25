@@ -1,11 +1,15 @@
 package com.aquariux.trade_system.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "crypto", indexes = {
     @Index(name = "idx_owner_symbol", columnList = "owner, symbol")
