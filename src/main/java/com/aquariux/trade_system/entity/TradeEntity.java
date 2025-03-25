@@ -24,7 +24,7 @@ public class TradeEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     @Column(name = "order_id")
-    private Long orderId;
+    private String orderId;
     private String status;
     @Column(precision = 20, scale = 8, nullable = false)
     private BigDecimal quantity;

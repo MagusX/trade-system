@@ -1,13 +1,23 @@
 package com.aquariux.trade_system.repository;
 
-import com.aquariux.trade_system.entity.PairPriceEntity;
+import com.aquariux.trade_system.entity.CryptoEntity;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @Repository
-public interface TradeRepository extends JpaRepository<PairPriceEntity, Long> {
-    @Query(value = "SELECT * FROM pair_price WHERE pair = :pair ORDER BY timestamp DESC LIMIT 1", nativeQuery = true)
-    PairPriceEntity findTopByPairOrderByTimestampDesc(@Param("pair") String pair);
+public interface CryptoRepository extends JpaRepository<CryptoEntity, Long> {
+    @Query(value = "SELECT * FROM crypto WHERE owner = :owner AND symbol IN (:firstSymbol, :secondSymbol) LIMIT 2", nativeQuery = true)
+    List<CryptoEntity> findCryptoPairByOwner(@Param("owner") String owner, @Param("firstSymbol") String firstSymbol, @Param("secondSymbol") String secondSymbol);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE crypto SET quantity = :updateQuantity WHERE owner = :owner AND symbol = :symbol", nativeQuery = true)
+    int setCryptoQuantity(@Param("owner") String owner, @Param("symbol") String symbol, @Param("updateQuantity") BigDecimal updateQuantity);
 }
