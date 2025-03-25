@@ -1,6 +1,5 @@
 package com.aquariux.trade_system.service.impl;
 
-import com.aquariux.trade_system.dto.LatestPriceDto;
 import com.aquariux.trade_system.entity.PairPriceEntity;
 import com.aquariux.trade_system.repository.PairPriceRepository;
 import com.aquariux.trade_system.service.PriceService;

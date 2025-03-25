@@ -1,6 +1,5 @@
 package com.aquariux.trade_system.controller;
 
-import com.aquariux.trade_system.dto.LatestPriceDto;
 import com.aquariux.trade_system.entity.PairPriceEntity;
 import com.aquariux.trade_system.service.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
