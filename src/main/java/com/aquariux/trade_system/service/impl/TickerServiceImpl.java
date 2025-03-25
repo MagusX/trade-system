@@ -14,8 +14,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -45,6 +46,7 @@ public class TickerServiceImpl {
 
     @Async
     public CompletableFuture<List<PairPriceEntity>> fetchPrice(String url, PairPriceMapper pairPriceMapper) {
+        // TODO: Handle failed response
         String response = restTemplate.getForObject(url, String.class);
         return CompletableFuture.completedFuture(pairPriceMapper.fromResponse(response));
     }
@@ -56,14 +58,36 @@ public class TickerServiceImpl {
 
         CompletableFuture.allOf(binancePairsFuture, huobiPairsFuture).thenRun(() -> {
             try {
-                List<PairPriceEntity> results = new ArrayList<>();
-
+                Map<String, PairPriceEntity> bestPriceMap = new HashMap<>();
                 List<PairPriceEntity> binancePairs = binancePairsFuture.get();
-                if (binancePairs != null) results.addAll(binancePairs);
-                List<PairPriceEntity> huobiPairs = huobiPairsFuture.get();
-                if (huobiPairs != null) results.addAll(huobiPairs);
+                List<PairPriceEntity> huobiPairs = binancePairsFuture.get();
 
-                pairPriceRepository.saveAll(results);
+                if (binancePairs != null) {
+                    for (PairPriceEntity pair : binancePairs) {
+                        bestPriceMap.put(pair.getPair(), pair);
+                    }
+                }
+                if (huobiPairs != null) {
+                    for (PairPriceEntity pair : huobiPairs) {
+                        PairPriceEntity bestPair = bestPriceMap.get(pair.getPair());
+                        if (bestPair == null) {
+                            bestPriceMap.put(pair.getPair(), pair);
+                            continue;
+                        }
+
+                        // choose the best ask & bid price
+                        if (pair.getAskPrice().compareTo(bestPair.getAskPrice()) < 0) {
+                            bestPair.setAskPrice(pair.getAskPrice());
+                        }
+                        if (pair.getBidPrice().compareTo(bestPair.getBidPrice()) > 0) {
+                            bestPair.setBidPrice(pair.getBidPrice());
+                        }
+                    }
+                }
+
+                if (bestPriceMap.isEmpty()) return;
+
+                pairPriceRepository.saveAll(bestPriceMap.values());
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
