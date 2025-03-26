@@ -60,14 +60,14 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (TradeUtils.SIDE_BUY.equals(dto.getSide())) {
-            if (usdtEntity == null) {
+            if (usdtEntity.getQuantity().compareTo(dto.getQuantity().multiply(pairPriceEntity.getAskQuantity())) < 0) {
                 throw new RuntimeException("Insufficient balance USDT");
             }
 
             openBuyOrder(dto, pairPriceEntity, usdtEntity, otherCryptoEntity);
         } else if (TradeUtils.SIDE_SELL.equals(dto.getSide())) {
             String targetSymbol = TradeUtils.PAIR_TARGET_MAP.get(dto.getPair());
-            if (otherCryptoEntity == null) {
+            if (otherCryptoEntity.getQuantity().compareTo(dto.getQuantity()) < 0) {
                 throw new RuntimeException("Insufficient balance " + targetSymbol);
             }
 
