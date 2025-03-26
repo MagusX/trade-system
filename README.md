@@ -1,4 +1,6 @@
-open-order:
+Assume trading by placing only Market Order (order at current market price)
+
+How order is handled
 - if order quantity <= current tick quantity:
   ```txt
   request: order(quantiy=2), currentTick(quantity=2)
