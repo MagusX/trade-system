@@ -26,7 +26,11 @@ public class OrderController {
 
     @PostMapping("/open-order")
     public ResponseEntity<?> openOrder(@RequestBody OpenOrderDto dto) {
-        orderService.openOrder(dto);
+        try {
+            orderService.openOrder(dto);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
         return ResponseEntity.ok(null);
     }
 }
