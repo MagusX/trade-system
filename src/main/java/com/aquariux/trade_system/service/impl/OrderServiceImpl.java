@@ -50,12 +50,14 @@ public class OrderServiceImpl implements OrderService {
         for (TradeEntity trade : tradeEntities) {
             PairPriceEntity pairPriceEntity = pairPriceEntityMap.get(trade.getPair());
 
-            boolean isBuy = trade.getSide().equals(TradeUtils.SIDE_BUY);
+            boolean isBuy = TradeUtils.SIDE_BUY.equals(trade.getSide());
             CryptoEntity[] cryptoPair = getCryptoPair(trade.getOwner(), trade.getPair());
             CryptoEntity balance = isBuy ? cryptoPair[0] : cryptoPair[1];
 
             BigDecimal marketPrice = isBuy ? pairPriceEntity.getAskPrice() : pairPriceEntity.getBidPrice();
             BigDecimal matchQuantity = isBuy ? pairPriceEntity.getAskQuantity() : pairPriceEntity.getBidQuantity();
+
+            trade.setMarketPrice(marketPrice);
 
             if (balance.getQuantity().compareTo(isBuy ? trade.getQuantity().multiply(marketPrice) : trade.getQuantity()) < 0) {
                 trade.setStatus(TradeUtils.TRADE_STATUS_FAILED);
@@ -80,12 +82,17 @@ public class OrderServiceImpl implements OrderService {
 
                 updateWalletBalance(trade.getOwner(), marketPrice, matchQuantity, cryptoPair[0], cryptoPair[1], isBuy);
 
+                OrderEntity orderEntity = orderRepository.findOrderById(trade.getOrderId());
+                orderEntity.setFilledQuantity(orderEntity.getFilledQuantity().add(matchQuantity));
+                orderEntity.setUnfilledQuantity(remainingQuantity);
+
+                orderRepository.save(orderEntity);
                 tradeRepository.saveAll(List.of(trade, remainingTrade));
             } else { // Fully filled
                 trade.setStatus(TradeUtils.TRADE_STATUS_COMPLETED);
                 updateWalletBalance(trade.getOwner(), marketPrice, trade.getQuantity(), cryptoPair[0], cryptoPair[1], isBuy);
 
-                orderRepository.updateOrderStatus(TradeUtils.ORDER_STATUS_FILLED, trade.getOrderId());
+                orderRepository.updateOrder(TradeUtils.ORDER_STATUS_FILLED, trade.getOrderId());
                 tradeRepository.save(trade);
             }
         }
@@ -99,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
         CryptoEntity otherCryptoEntity = usdtOtherPair[1];
 
         if (TradeUtils.SIDE_BUY.equals(dto.getSide())) {
-            if (usdtEntity.getQuantity().compareTo(dto.getQuantity().multiply(pairPriceEntity.getAskQuantity())) < 0) {
+            if (usdtEntity.getQuantity().compareTo(dto.getQuantity().multiply(pairPriceEntity.getAskPrice())) < 0) {
                 throw new RuntimeException("Insufficient balance USDT");
             }
 
@@ -193,6 +200,9 @@ public class OrderServiceImpl implements OrderService {
 
         TradeEntity remainingTradeEntity = new TradeEntity();
         remainingTradeEntity.setOrderId(orderEntity.getId());
+        remainingTradeEntity.setOwner(dto.getOwner());
+        remainingTradeEntity.setPair(dto.getPair());
+        remainingTradeEntity.setSide(dto.getSide());
         remainingTradeEntity.setMarketPrice(BigDecimal.ZERO);
         remainingTradeEntity.setQuantity(remainingOrderQuantity);
         remainingTradeEntity.setStatus(TradeUtils.TRADE_STATUS_OPEN);

@@ -55,7 +55,7 @@ public class TickerServiceImpl {
     }
 
     @Scheduled(fixedRate = 10000) // 10 seconds
-    private void schedulePriceUpdate() {
+    public void schedulePriceUpdate() {
         CompletableFuture<List<PairPriceEntity>> binancePairsFuture = fetchPrice(binanceUrl, binanceMapper);
         CompletableFuture<List<PairPriceEntity>> huobiPairsFuture = fetchPrice(huobiUrl, huobiMapper);
 

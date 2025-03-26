@@ -9,7 +9,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+    OrderEntity findOrderById(String id);
+
     @Modifying
-    @Query("UPDATE trade_order SET status = :status WHERE id = :orderId")
-    int updateOrderStatus(@Param("status") String status, @Param("orderId") String orderId);
+    @Query(value = "UPDATE trade_order SET filled_quantity = quantity, unfilled_quantity = 0, status = :status WHERE id = :orderId", nativeQuery = true)
+    int updateOrder(@Param("status") String status, @Param("orderId") String orderId);
 }
