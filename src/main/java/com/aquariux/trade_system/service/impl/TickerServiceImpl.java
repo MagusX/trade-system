@@ -93,41 +93,4 @@ public class TickerServiceImpl {
             }
         });
     }
-
-//    @Scheduled(fixedRate = 10000) // 10 seconds
-//    public void schedulePriceUpdate() {
-//        CompletableFuture<List<PairPriceEntity>> binancePairsFuture = fetchPrice(binanceUrl, binanceMapper);
-//        CompletableFuture<List<PairPriceEntity>> huobiPairsFuture = fetchPrice(huobiUrl, huobiMapper);
-//
-//        CompletableFuture.allOf(binancePairsFuture, huobiPairsFuture)
-//        .thenRun(() -> {
-//            try {
-//                Map<String, PairPriceEntity> bestPriceMap = new HashMap<>();
-//                List<PairPriceEntity> binancePairs = binancePairsFuture.get();
-//                List<PairPriceEntity> huobiPairs = binancePairsFuture.get();
-//
-////                if (binancePairs != null) {
-////                    for (PairPriceEntity pair : binancePairs) {
-////                        bestPriceMap.put(pair.getPair(), pair);
-////                    }
-////                }
-////                if (huobiPairs != null) {
-////                    for (PairPriceEntity pair : huobiPairs) {
-////                        var binancePair = bestPriceMap.get(pair.getPair());
-////                        if (binancePair == null) {
-////                            bestPriceMap.put(pair.getPair(), pair);
-////                        } else if (pair.getAskPrice().compareTo(binancePair.getAskPrice()) < 0) {
-////                            bestPriceMap.put(pair.getPair(), pair);
-////                        }
-////                    }
-////                }
-//
-////                if ()
-//
-//            } catch (InterruptedException | ExecutionException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//        });
-//    }
 }
