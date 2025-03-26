@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "trade", indexes = {
-        @Index(name = "idx_orderId_createdAt", columnList = "order_id, created_at")
+        @Index(name = "idx_orderId_createdAt", columnList = "order_id, created_at"),
+        @Index(name = "idx_status", columnList = "status")
 })
 @EntityListeners(AuditingEntityListener.class)
 public class TradeEntity {
@@ -25,6 +26,9 @@ public class TradeEntity {
     private Long id;
     @Column(name = "order_id")
     private String orderId;
+    private String owner;
+    private String pair;
+    private String side;
     private String status;
     @Column(precision = 20, scale = 8, nullable = false)
     private BigDecimal quantity;

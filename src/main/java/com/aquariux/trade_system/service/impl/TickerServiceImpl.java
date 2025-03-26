@@ -3,6 +3,7 @@ package com.aquariux.trade_system.service.impl;
 import com.aquariux.trade_system.entity.PairPriceEntity;
 import com.aquariux.trade_system.mapper.PairPriceMapper;
 import com.aquariux.trade_system.repository.PairPriceRepository;
+import com.aquariux.trade_system.service.OrderService;
 import com.aquariux.trade_system.util.TradeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,28 +32,30 @@ public class TickerServiceImpl {
     private final PairPriceMapper binanceMapper;
     private final PairPriceMapper huobiMapper;
     private final PairPriceRepository pairPriceRepository;
-
+    private final OrderService orderService;
 
     @Autowired
     public TickerServiceImpl(RestTemplate restTemplate,
                              @Qualifier(value = TradeUtils.TICKER_SOURCE_BINANCE) PairPriceMapper binanceMapper,
                              @Qualifier(value = TradeUtils.TICKER_SOURCE_HUOBI) PairPriceMapper huobiMapper,
-                             PairPriceRepository pairPriceRepository) {
+                             PairPriceRepository pairPriceRepository,
+                             OrderService orderService) {
         this.restTemplate = restTemplate;
         this.binanceMapper = binanceMapper;
         this.huobiMapper = huobiMapper;
         this.pairPriceRepository = pairPriceRepository;
+        this.orderService = orderService;
     }
 
     @Async
-    public CompletableFuture<List<PairPriceEntity>> fetchPrice(String url, PairPriceMapper pairPriceMapper) {
+    private CompletableFuture<List<PairPriceEntity>> fetchPrice(String url, PairPriceMapper pairPriceMapper) {
         // TODO: Handle failed response
         String response = restTemplate.getForObject(url, String.class);
         return CompletableFuture.completedFuture(pairPriceMapper.fromResponse(response));
     }
 
     @Scheduled(fixedRate = 10000) // 10 seconds
-    public void schedulePriceUpdate() {
+    private void schedulePriceUpdate() {
         CompletableFuture<List<PairPriceEntity>> binancePairsFuture = fetchPrice(binanceUrl, binanceMapper);
         CompletableFuture<List<PairPriceEntity>> huobiPairsFuture = fetchPrice(huobiUrl, huobiMapper);
 
@@ -88,6 +91,8 @@ public class TickerServiceImpl {
                 if (bestPriceMap.isEmpty()) return;
 
                 pairPriceRepository.saveAll(bestPriceMap.values());
+
+                orderService.processOpenTrades(bestPriceMap);
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
