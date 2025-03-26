@@ -9,6 +9,8 @@ import java.util.List;
 
 @Repository
 public interface TradeRepository extends JpaRepository<TradeEntity, Long> {
+    List<TradeEntity> findByOrderIdIn(List<String> orderIds);
+
     @Query(value = "SELECT * FROM trade WHERE STATUS = 'OPEN'", nativeQuery = true)
     List<TradeEntity> findAllOpenTrades();
 }

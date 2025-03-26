@@ -1,6 +1,7 @@
 package com.aquariux.trade_system.service.impl;
 
 import com.aquariux.trade_system.dto.OpenOrderDto;
+import com.aquariux.trade_system.dto.OrderTradeDto;
 import com.aquariux.trade_system.entity.CryptoEntity;
 import com.aquariux.trade_system.entity.OrderEntity;
 import com.aquariux.trade_system.entity.PairPriceEntity;
@@ -20,8 +21,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -40,6 +43,35 @@ public class OrderServiceImpl implements OrderService {
         this.orderRepository = orderRepository;
         this.tradeRepository = tradeRepository;
         this.cryptoRepository = cryptoRepository;
+    }
+
+    @Override
+    public List<OrderTradeDto> getOrdersWithTradesByOwner(String owner) {
+        List<OrderEntity> orders = orderRepository.findByOwner(owner);
+        if (orders.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> orderIds = orders.stream().map(OrderEntity::getId).collect(Collectors.toList());
+        List<TradeEntity> trades = tradeRepository.findByOrderIdIn(orderIds);
+
+        Map<String, List<TradeEntity>> tradeMap = trades.stream()
+                .collect(Collectors.groupingBy(TradeEntity::getOrderId));
+
+        return orders.stream()
+                .map(order -> new OrderTradeDto(
+                        order.getId(), order.getOwner(), order.getPair(),
+                        order.getSide(), order.getStatus(),
+                        order.getQuantity(), order.getFilledQuantity(),
+                        order.getUnfilledQuantity(), order.getMarketPrice(),
+                        order.getCreatedAt(),
+                        tradeMap.getOrDefault(order.getId(), Collections.emptyList())
+                                .stream()
+                                .map(trade -> new OrderTradeDto.TradeDto(
+                                        trade.getId(), trade.getOrderId(), trade.getStatus(),
+                                        trade.getQuantity(), trade.getMarketPrice(), trade.getCreatedAt()))
+                                .collect(Collectors.toList())))
+                .collect(Collectors.toList());
     }
 
     @Async

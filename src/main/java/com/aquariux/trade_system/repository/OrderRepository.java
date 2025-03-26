@@ -7,9 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     OrderEntity findOrderById(String id);
+
+    List<OrderEntity> findByOwner(String owner);
 
     @Modifying
     @Query(value = "UPDATE trade_order SET filled_quantity = quantity, unfilled_quantity = 0, status = :status WHERE id = :orderId", nativeQuery = true)
