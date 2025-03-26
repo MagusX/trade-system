@@ -16,6 +16,8 @@ public interface CryptoRepository extends JpaRepository<CryptoEntity, Long> {
     @Query(value = "SELECT * FROM crypto WHERE owner = :owner AND symbol IN (:firstSymbol, :secondSymbol) LIMIT 2", nativeQuery = true)
     List<CryptoEntity> findCryptoPairByOwner(@Param("owner") String owner, @Param("firstSymbol") String firstSymbol, @Param("secondSymbol") String secondSymbol);
 
+    List<CryptoEntity> findAllByOwner(String owner);
+
     @Modifying
     @Transactional
     @Query(value = "UPDATE crypto SET quantity = :updateQuantity WHERE owner = :owner AND symbol = :symbol", nativeQuery = true)
